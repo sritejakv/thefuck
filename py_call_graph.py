@@ -9,15 +9,21 @@ from pycallgraph.globbing_filter import GlobbingFilter
 def record_call_graph(request):
     import time
     current_millis = int(round(time.time() * 1000))
-    # import pdb
-    # pdb.set_trace()
-    with PyCallGraph(output=GraphvizOutput(output_file='dynCG.png', dot_file='./dotFiles/%s.dot' %
-                                                                             (
-                                                                              current_millis)),
+    total_input_files = set()
+    with open("../entry_point_extractor/commonEntryPoints/thefuck.txt") as f:
+        for line in f:
+            temp = line.split("thefuck")[-1][1:]
+            temp = temp.replace("/", ".")
+            temp = temp.replace(".py", ".*")
+            temp = temp.replace("\n", "")
+            if len(temp) > 0:
+                total_input_files.add("thefuck." + temp)
+
+    with PyCallGraph(output=GraphvizOutput(output_file='dynCG.png', dot_file='./dotFiles/%s.dot' % current_millis),
                      config=Config(debug=True,
                                    trace_filter=GlobbingFilter(
+                                       include=list(total_input_files),
                                        exclude=['pycallgraph.*', 'test*.*', '*.tests.*', '*test.*'],
-                                       include=['thefuck.*'],
                                    )
                                    )):
         yield
